@@ -43,7 +43,7 @@ MAN		= $(BUILD_ROOT)/$(MANDIR)/man8
 INIT		= $(BUILD_ROOT)/etc/rc.d/init.d
 MKDIR		= mkdir
 INSTALL		= install
-STATIC_LIBS	= libipvs/libipvs.a
+STATIC_BUILD	= libipvs/libipvs.a
 
 ifeq "${ARCH}" "sparc64"
     CFLAGS = -Wall -Wunused -Wstrict-prototypes -g -m64 -pipe -mcpu=ultrasparc -mcmodel=medlow
@@ -63,9 +63,10 @@ RPMBUILD = $(shell				\
 	fi )
 
 OBJS		= ipvsadm.o config_stream.o dynamic_array.o
-LIBS		= -lpopt
+LIBS		= -pthread -lm
+STATIC_LIBS	= -lpopt
 ifneq (0,$(HAVE_NL))
-LIBS		+= $(shell \
+STATIC_LIBS	+= $(shell \
 		if which pkg-config > /dev/null 2>&1; then \
 		  if   pkg-config --libs libnl-genl-3.0  2> /dev/null; then :;\
 		  elif pkg-config --libs libnl-2.0       2> /dev/null; then :;\
@@ -86,8 +87,8 @@ all:            libs ipvsadm
 libs:
 		make -C libipvs
 
-ipvsadm:	$(OBJS) $(STATIC_LIBS)
-		$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+ipvsadm:	$(OBJS) $(STATIC_BUILD)
+		$(CC) $(CFLAGS) -o $@ $^ -Wl,-dn $(STATIC_LIBS) -Wl,-dy $(LIBS)
 
 install:        all
 		if [ ! -d $(SBIN) ]; then $(MKDIR) -p $(SBIN); fi
