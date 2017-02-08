@@ -1,3 +1,6 @@
+** EDIT **
+1. Make lpopt and lnl statically linked.
+
 --------------------------------------------------------------------------
 
 ipvsadm
